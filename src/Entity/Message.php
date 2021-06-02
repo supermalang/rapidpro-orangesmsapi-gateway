@@ -66,7 +66,7 @@ class Message
         return $this->sendTo;
     }
 
-    public function setSentdo(string $sendTo): self
+    public function setSendTo(string $sendTo): self
     {
         $this->sendTo = $sendTo;
 
