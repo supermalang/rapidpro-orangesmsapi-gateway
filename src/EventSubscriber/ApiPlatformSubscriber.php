@@ -41,7 +41,7 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
                 $headers = ['Content-Type' => 'application/json'];
                 $now = new \DateTime();
                 $body = ['from' => $defaultChannel->getSenderNumber(), 'text' => $entity->getMessage(), 'data' => date_format($now, DATE_W3C)];
-                $response = $this->client->request('POST', $defaultChannel->getReceivedUrl(), ['headers' => $headers, 'body' => $body])->toArray();
+                $response = $this->client->request('POST', $defaultChannel->getReceivedUrl(), ['headers' => $headers, 'body' => http_build_query($body)])->toArray();
             }
         }
     }
