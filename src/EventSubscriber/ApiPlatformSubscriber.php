@@ -40,7 +40,7 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
             if ($defaultChannel->getReceivedUrl()) {
                 $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
                 $now = new \DateTime();
-                $body = ['from' => $defaultChannel->getSendTo(), 'text' => $entity->getMessage(), 'data' => date_format($now, DATE_W3C)];
+                $body = ['from' => $entity->getSendTo(), 'text' => $entity->getMessage(), 'data' => date_format($now, DATE_W3C)];
 
                 $this->client->request('POST', $defaultChannel->getReceivedUrl(), ['headers' => $headers, 'body' => $body]); //->toArray();
             }
