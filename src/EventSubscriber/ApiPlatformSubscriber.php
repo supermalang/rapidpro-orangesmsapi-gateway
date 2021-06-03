@@ -38,7 +38,7 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
             $defaultChannel = $defaultChannel[0];
 
             if ($defaultChannel->getReceivedUrl()) {
-                $headers = ['Content-Type' => 'application/json'];
+                $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
                 $now = new \DateTime();
                 $body = ['from' => $defaultChannel->getSenderNumber(), 'text' => $entity->getMessage(), 'data' => date_format($now, DATE_W3C)];
 
