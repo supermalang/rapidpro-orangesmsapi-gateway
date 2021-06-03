@@ -39,6 +39,11 @@ class Message
      */
     private $deliveryCallbackUuid;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $messageId;
+
     public function __construct()
     {
         $this->status = 'Received';
@@ -93,6 +98,18 @@ class Message
     public function setDeliveryCallbackUuid(string $deliveryCallbackUuid): self
     {
         $this->deliveryCallbackUuid = $deliveryCallbackUuid;
+
+        return $this;
+    }
+
+    public function getMessageId(): ?int
+    {
+        return $this->messageId;
+    }
+
+    public function setMessageId(?int $messageId): self
+    {
+        $this->messageId = $messageId;
 
         return $this;
     }

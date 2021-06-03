@@ -40,7 +40,7 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
             if ($defaultChannel->getReceivedUrl()) {
                 $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
                 $now = new \DateTime();
-                $body = ['from' => $entity->getSendTo(), 'text' => $entity->getMessage(), 'data' => date_format($now, DATE_W3C)];
+                $body = ['from' => $entity->getSendTo(), 'text' => $entity->getMessage(), 'date' => date_format($now, DATE_W3C)];
 
                 $this->client->request('POST', $defaultChannel->getReceivedUrl(), ['headers' => $headers, 'body' => $body]); //->toArray();
             }
@@ -76,16 +76,23 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
 
             $entity->setDeliveryCallbackUuid(end($explodedUrl));
 
+            $messageId = null != $entity->getMessageId() ? $entity->getMessageId() : null;
+
             if ($defaultChannel->getSentUrl()) {
-                $this->postMessageSent($defaultChannel->getSentUrl());
+                $this->postMessageSent($defaultChannel->getSentUrl(), $messageId);
             }
         }
     }
 
-    public function postMessageSent($endpoint)
+    public function postMessageSent($endpoint, $messageId = null)
     {
         $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
-        $this->client->request('POST', $endpoint, ['headers' => $headers]);
+
+        if (isset($messageId)) {
+            return $this->client->request('POST', $endpoint, ['headers' => $headers, 'body' => ['id' => $messageId]]);
+        }
+
+        return $this->client->request('POST', $endpoint, ['headers' => $headers]);
     }
 
     public function postMessageDelivered(ViewEvent $event)
