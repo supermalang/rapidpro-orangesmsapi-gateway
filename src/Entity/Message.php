@@ -40,7 +40,7 @@ class Message
     private $deliveryCallbackUuid;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="string", length=30, nullable=true)
      */
     private $messageId;
 
@@ -102,12 +102,12 @@ class Message
         return $this;
     }
 
-    public function getMessageId(): ?int
+    public function getMessageId(): ?string
     {
         return $this->messageId;
     }
 
-    public function setMessageId(?int $messageId): self
+    public function setMessageId(?string $messageId): self
     {
         $this->messageId = $messageId;
 
