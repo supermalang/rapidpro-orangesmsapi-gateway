@@ -24,7 +24,8 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
     {
         return [
             KernelEvents::VIEW => [
-                ['postMessageReceived', EventPriorities::PRE_WRITE, 200],
+                // To Handle later. Need to be called only when our service receives an incoming message to forward to RapidPro
+                // ['postMessageReceived', EventPriorities::PRE_WRITE, 200],
                 ['transmitMessage', EventPriorities::PRE_WRITE, 100],
             ],
         ];
