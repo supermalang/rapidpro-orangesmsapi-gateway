@@ -7,8 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method Message|null find($id, $lockMode = null, $lockVersion = null)
- * @method Message|null findOneBy(array $criteria, array $orderBy = null)
+ * @method null|Message find($id, $lockMode = null, $lockVersion = null)
+ * @method null|Message findOneBy(array $criteria, array $orderBy = null)
  * @method Message[]    findAll()
  * @method Message[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
@@ -36,15 +36,23 @@ class MessageRepository extends ServiceEntityRepository
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?Message
+    public function findOneWithMessageId($value): ?Message
     {
         return $this->createQueryBuilder('m')
-            ->andWhere('m.exampleField = :val')
+            ->andWhere('m.messageId = :val')
             ->setParameter('val', $value)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-    */
+
+    public function findOneWithDeliveryCallbackUuid($value): ?Message
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.deliveryCallbackUuid = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }
