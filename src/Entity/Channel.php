@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ChannelRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -91,6 +93,21 @@ class Channel
      * @ORM\Column(type="string", length=255)
      */
     private $getTokenBaseUrl;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Token::class, mappedBy="channel")
+     */
+    private $tokens;
+
+    public function __construct()
+    {
+        $this->tokens = new ArrayCollection();
+    }
+
+    public function __toString(): ?string
+    {
+        return $this->label;
+    }
 
     public function getId(): ?int
     {
@@ -285,6 +302,36 @@ class Channel
     public function setGetTokenBaseUrl(string $getTokenBaseUrl): self
     {
         $this->getTokenBaseUrl = $getTokenBaseUrl;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Token[]
+     */
+    public function getTokens(): Collection
+    {
+        return $this->tokens;
+    }
+
+    public function addToken(Token $token): self
+    {
+        if (!$this->tokens->contains($token)) {
+            $this->tokens[] = $token;
+            $token->setChannel($this);
+        }
+
+        return $this;
+    }
+
+    public function removeToken(Token $token): self
+    {
+        if ($this->tokens->removeElement($token)) {
+            // set the owning side to null (unless already changed)
+            if ($token->getChannel() === $this) {
+                $token->setChannel(null);
+            }
+        }
 
         return $this;
     }

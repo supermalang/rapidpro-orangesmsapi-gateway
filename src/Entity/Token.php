@@ -37,6 +37,12 @@ class Token
      */
     private $createDate;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Channel::class, inversedBy="tokens")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $channel;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,6 +92,18 @@ class Token
     public function setCreateDate(\DateTimeInterface $createDate): self
     {
         $this->createDate = $createDate;
+
+        return $this;
+    }
+
+    public function getChannel(): ?Channel
+    {
+        return $this->channel;
+    }
+
+    public function setChannel(?Channel $channel): self
+    {
+        $this->channel = $channel;
 
         return $this;
     }
