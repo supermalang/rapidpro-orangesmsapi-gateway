@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Channel;
 use App\Entity\DeliveryNotifications;
 use App\Entity\Message;
+use App\Entity\Token;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
@@ -31,8 +32,9 @@ class DashboardController extends AbstractDashboardController
     public function configureMenuItems(): iterable
     {
         yield MenuItem::linktoDashboard('Dashboard', 'fa fa-home');
-        yield MenuItem::linkToCrud('Messages', 'fas fa-list', Message::class);
-        yield MenuItem::linkToCrud('DR Notifications', 'fas fa-list', DeliveryNotifications::class);
-        yield MenuItem::linkToCrud('Channels', 'fas fa-list', Channel::class);
+        yield MenuItem::linkToCrud('Messages', 'fa fa-comments-o', Message::class);
+        yield MenuItem::linkToCrud('DR Notifications', 'fa fa-bell', DeliveryNotifications::class);
+        yield MenuItem::linkToCrud('Channels', 'fas fa-rocket', Channel::class);
+        yield MenuItem::linkToCrud('Tokens', 'fa fa-shield', Token::class);
     }
 }

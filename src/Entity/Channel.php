@@ -72,6 +72,26 @@ class Channel
      */
     private $stoppedUrl;
 
+    /**
+     * @ORM\Column(type="string", length=30)
+     */
+    private $getTokenAuthType;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $clientId;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $clientSecret;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $getTokenBaseUrl;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -205,6 +225,66 @@ class Channel
     public function setStoppedUrl(?string $stoppedUrl): self
     {
         $this->stoppedUrl = $stoppedUrl;
+
+        return $this;
+    }
+
+    public function getAuthorizationType(): ?string
+    {
+        return $this->authorizationType;
+    }
+
+    public function setAuthorizationType(string $authorizationType): self
+    {
+        $this->authorizationType = $authorizationType;
+
+        return $this;
+    }
+
+    public function getGetTokenAuthType(): ?string
+    {
+        return $this->getTokenAuthType;
+    }
+
+    public function setGetTokenAuthType(string $getTokenAuthType): self
+    {
+        $this->getTokenAuthType = $getTokenAuthType;
+
+        return $this;
+    }
+
+    public function getClientId(): ?string
+    {
+        return $this->clientId;
+    }
+
+    public function setClientId(?string $clientId): self
+    {
+        $this->clientId = $clientId;
+
+        return $this;
+    }
+
+    public function getClientSecret(): ?string
+    {
+        return $this->clientSecret;
+    }
+
+    public function setClientSecret(?string $clientSecret): self
+    {
+        $this->clientSecret = $clientSecret;
+
+        return $this;
+    }
+
+    public function getGetTokenBaseUrl(): ?string
+    {
+        return $this->getTokenBaseUrl;
+    }
+
+    public function setGetTokenBaseUrl(string $getTokenBaseUrl): self
+    {
+        $this->getTokenBaseUrl = $getTokenBaseUrl;
 
         return $this;
     }
