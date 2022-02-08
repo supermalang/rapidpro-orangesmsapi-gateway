@@ -37,7 +37,7 @@ class Message
     /**
      * @ORM\Column(type="string", length=180)
      */
-    private $deliveryCallbackUuid;
+    private $deliveryCallbackUuid = 'N/A';
 
     /**
      * @ORM\Column(type="string", length=30, nullable=true)
