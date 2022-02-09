@@ -2,7 +2,6 @@
 
 namespace App\EventSubscriber;
 
-use App\Entity\DeliveryNotifications;
 use App\Entity\Message;
 use App\Entity\Token;
 use App\Repository\ChannelRepository;
@@ -34,7 +33,6 @@ class EasyAdminSubscriber implements EventSubscriberInterface
         return [
             BeforeEntityPersistedEvent::class => [
                 ['transmitMessage', 110],
-                ['postMessageDelivered', 60],
                 ['setCreatedTime', 25],
             ],
             BeforeEntityUpdatedEvent::class => [
@@ -130,52 +128,9 @@ class EasyAdminSubscriber implements EventSubscriberInterface
                 $explodedUrl = explode('/', $results['resourceURL']);
 
                 $entity->setDeliveryCallbackUuid(end($explodedUrl));
-
-                $messageId = null != $entity->getMessageId() ? $entity->getMessageId() : null;
-
-                if ($channelToUse->getSentUrl()) {
-                    $this->postMessageSent($channelToUse->getSentUrl(), $messageId);
-                }
             } else {
                 // TODO: Fire Exception
-
                 return;
-            }
-        }
-    }
-
-    /** Notify the Calling Platform that the message has been sent */
-    public function postMessageSent($endpoint, $messageId = null)
-    {
-        $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
-
-        if (isset($messageId)) {
-            return $this->client->request('POST', $endpoint, ['headers' => $headers, 'body' => ['id' => $messageId]]);
-        }
-
-        return $this->client->request('POST', $endpoint, ['headers' => $headers]);
-    }
-
-    /** Notify the Calling Platform that the message has been delivered */
-    public function postMessageDelivered(BeforeEntityPersistedEvent $event)
-    {
-        $entity = $event->getEntityInstance();
-
-        if ($entity instanceof DeliveryNotifications && 'DeliveredToTerminal' == $entity->getDeliveryStatus()) {
-            $channelToUse = $this->channelRepo->getDefaultChannel();
-            $channelToUse = $channelToUse[0];
-
-            $endpoint = $channelToUse->getDeliveredUrl();
-
-            $message = $this->messageRepo->findOneWithDeliveryCallbackUuid($entity->getDeliveryCallbackUuid());
-
-            if (!is_null($message)) {
-                $messageId = $message->getMessageId();
-                $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
-
-                if (isset($messageId)) {
-                    return $this->client->request('POST', $endpoint, ['headers' => $headers, 'body' => ['id' => $messageId]]);
-                }
             }
         }
     }
