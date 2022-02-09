@@ -39,6 +39,8 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
                 // ['postMessageReceived', EventPriorities::PRE_WRITE, 200],
                 ['transmitMessage', EventPriorities::PRE_WRITE, 100],
                 ['postMessageDelivered', EventPriorities::PRE_WRITE, 50],
+                ['setCreatedTime', EventPriorities::PRE_WRITE, 25],
+                ['setModifiedTime', EventPriorities::PRE_WRITE, 20],
             ],
         ];
     }
@@ -187,6 +189,27 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
                     return $this->client->request('POST', $endpoint, ['headers' => $headers, 'body' => ['id' => $messageId]]);
                 }
             }
+        }
+    }
+
+    public function setCreatedTime(ViewEvent $event)
+    {
+        $entity = $event->getControllerResult();
+
+        if (method_exists($entity, 'setCreated')) {
+            $entity->setCreated(new \DateTimeImmutable());
+        }
+    }
+
+    public function setModifiedTime(ViewEvent $event)
+    {
+        $entity = $event->getControllerResult();
+
+        if (method_exists($entity, 'setModified')) {
+            $entity->setModified(new \DateTimeImmutable());
+        }
+        if (method_exists($entity, 'setUpdated')) {
+            $entity->setUpdated(new \DateTimeImmutable());
         }
     }
 }

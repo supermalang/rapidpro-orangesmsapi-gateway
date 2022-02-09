@@ -40,6 +40,16 @@ class DeliveryNotifications
      */
     private $deliveryInfoNotification = [];
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $created;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $updated;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -89,6 +99,30 @@ class DeliveryNotifications
     public function setDeliveryInfoNotification(array $deliveryInfoNotification): self
     {
         $this->deliveryInfoNotification = $deliveryInfoNotification;
+
+        return $this;
+    }
+
+    public function getCreated(): ?\DateTimeInterface
+    {
+        return $this->created;
+    }
+
+    public function setCreated(\DateTimeInterface $created): self
+    {
+        $this->created = $created;
+
+        return $this;
+    }
+
+    public function getUpdated(): ?\DateTimeInterface
+    {
+        return $this->updated;
+    }
+
+    public function setUpdated(?\DateTimeInterface $updated): self
+    {
+        $this->updated = $updated;
 
         return $this;
     }

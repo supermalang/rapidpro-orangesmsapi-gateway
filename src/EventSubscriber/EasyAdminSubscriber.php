@@ -11,6 +11,7 @@ use App\Repository\TokenRepository;
 use App\Service\OrangeTokenHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityUpdatedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -34,6 +35,10 @@ class EasyAdminSubscriber implements EventSubscriberInterface
             BeforeEntityPersistedEvent::class => [
                 ['transmitMessage', 110],
                 ['postMessageDelivered', 60],
+                ['setCreatedTime', 25],
+            ],
+            BeforeEntityUpdatedEvent::class => [
+                ['setModifiedTime', 20],
             ],
         ];
     }
@@ -173,6 +178,27 @@ class EasyAdminSubscriber implements EventSubscriberInterface
                     return $this->client->request('POST', $endpoint, ['headers' => $headers, 'body' => ['id' => $messageId]]);
                 }
             }
+        }
+    }
+
+    public function setCreatedTime(BeforeEntityPersistedEvent $event)
+    {
+        $entity = $event->getEntityInstance();
+
+        if (method_exists($entity, 'setCreated')) {
+            $entity->setCreated(new \DateTimeImmutable());
+        }
+    }
+
+    public function setModifiedTime(BeforeEntityUpdatedEvent $event)
+    {
+        $entity = $event->getEntityInstance();
+
+        if (method_exists($entity, 'setModified')) {
+            $entity->setModified(new \DateTimeImmutable());
+        }
+        if (method_exists($entity, 'setUpdated')) {
+            $entity->setUpdated(new \DateTimeImmutable());
         }
     }
 }
