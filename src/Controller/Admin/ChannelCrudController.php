@@ -9,6 +9,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -27,6 +28,7 @@ class ChannelCrudController extends AbstractCrudController
             //IdField::new('id'),
             FormField::addTab('Channel Identification')->setIcon('info-circle'),
             TextField::new('label', 'Label'),
+            TextField::new('channelSlug', 'Slug')->onlyOnDetail()->setHelp('The channel slug is not stored in the DB, it is just meant to be a user-friendly way to send channel ID via the API'),
             TextField::new('senderName'),
             TextField::new('senderNumber'),
             BooleanField::new('isDefault')->setDisabled(),
@@ -47,6 +49,9 @@ class ChannelCrudController extends AbstractCrudController
             UrlField::new('deliveredUrl')->setDefaultColumns(5)->setHelp('The callback to inform the calling platform that message is delivered')->hideOnIndex(),
             UrlField::new('failedUrl')->setDefaultColumns(5)->setHelp('The callback to inform the calling platform that message is not delivered')->hideOnIndex(),
             UrlField::new('stoppedUrl')->setDefaultColumns(5)->setHelp('The callback to inform the calling platform that contact asks to opt-out')->hideOnIndex(),
+
+            DateTimeField::new('created')->onlyOnDetail(),
+            DateTimeField::new('updated')->onlyOnDetail(),
         ];
     }
 

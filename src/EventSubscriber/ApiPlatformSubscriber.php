@@ -49,15 +49,15 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
     {
         $entity = $event->getControllerResult();
         if ($entity instanceof Message) {
-            $defaultChannel = $this->channelRepo->getDefaultChannel();
-            $defaultChannel = $defaultChannel[0];
+            $channelToUse = $this->channelRepo->getDefaultChannel();
+            $channelToUse = $channelToUse[0];
 
-            if ($defaultChannel->getReceivedUrl()) {
+            if ($channelToUse->getReceivedUrl()) {
                 $headers = ['Content-Type' => 'application/x-www-form-urlencoded'];
                 $now = new \DateTime();
                 $body = ['from' => $entity->getSendTo(), 'text' => $entity->getMessage(), 'date' => date_format($now, DATE_W3C)];
 
-                $this->client->request('POST', $defaultChannel->getReceivedUrl(), ['headers' => $headers, 'body' => $body]); //->toArray();
+                $this->client->request('POST', $channelToUse->getReceivedUrl(), ['headers' => $headers, 'body' => $body]); //->toArray();
             }
         }
     }
@@ -71,8 +71,20 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
             $now_time = new \DateTime('now');
             $authToken = null;
 
-            $defaultChannel = $this->channelRepo->getDefaultChannel();
-            $defaultChannel = $defaultChannel[0];
+            $chosenChannelSlug = null == $entity->getChannelSlug() ? null : explode('-', $entity->getChannelSlug());
+            $chosenChannelId = null == $chosenChannelSlug ? null : end($chosenChannelSlug);
+            $channelToUse = null == $chosenChannelId ? $this->channelRepo->getDefaultChannel() : $this->channelRepo->find($chosenChannelId);
+
+            if (null == $channelToUse) {
+                $response = new Response();
+                $response->setContent(json_encode(['message' => 'Unable to identify channel to use. Please specify a good channel']));
+                $response->headers->set('Content-Type', 'application/json');
+                $response->setStatusCode(Response::HTTP_BAD_GATEWAY);
+                $event->setResponse($response);
+
+                return;
+            }
+            $entity->setChannel($channelToUse);
 
             /**
              * We need to check whether we have a valid auth token for this channel. If not, we request for a new token before sending SMS. That process will happen in several steps:
@@ -82,13 +94,13 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
              *      a. get new token
              *      b. add the token to the DB and use it for our request.
              */
-            $lastToken = $this->tokenRepo->findOneWithChannelId($defaultChannel->getId());
+            $lastToken = $this->tokenRepo->findOneWithChannelId($channelToUse->getId());
             $lastTokenExpiryDate = null == $lastToken ? null : $lastToken->getExpireDate();
 
             // If token has expired or does not exist in DB
             if ($now_time > $lastTokenExpiryDate || null == $lastTokenExpiryDate) {
                 // Get a new token
-                $authToken = $this->oth->getNewToken($defaultChannel->getClientId(), $defaultChannel->getClientSecret(), $defaultChannel->getGetTokenBaseUrl());
+                $authToken = $this->oth->getNewToken($channelToUse->getClientId(), $channelToUse->getClientSecret(), $channelToUse->getGetTokenBaseUrl());
 
                 // If token is good we save it in the DB
                 if (null != $authToken) {
@@ -98,7 +110,7 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
                     $tokenExpireDate = $now_time->add(new \DateInterval('PT'.$authToken['expires_in'].'S')); // adds `expires_in` seconds (3600 by default)
                     $tokenEntity->setCreateDate(new \DateTime('now'));
                     $tokenEntity->setExpireDate($tokenExpireDate);
-                    $tokenEntity->setChannel($defaultChannel);
+                    $tokenEntity->setChannel($channelToUse);
 
                     $this->em->persist($tokenEntity);
                     $this->em->flush();
@@ -119,16 +131,16 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
             // To make sure the message is not sent several times
             $duplicatedMessage = $this->messageRepo->findOneWithMessageId($entity->getMessageId());
             if (is_null($duplicatedMessage)) {
-                $address = $defaultChannel->getSendUrl();
+                $address = $channelToUse->getSendUrl();
 
-                $endpoint = str_replace('{{SENDER_NUMBER}}', $defaultChannel->getSenderNumber(), $address);
+                $endpoint = str_replace('{{SENDER_NUMBER}}', $channelToUse->getSenderNumber(), $address);
 
                 $headers = ['Content-Type' => 'application/json', 'Authorization' => 'Bearer '.$lastToken->getAccessToken()];
 
                 $body = ['outboundSMSMessageRequest' => [
                     'address' => 'tel:+'.str_replace('+', '', $entity->getSendTo()),
-                    'senderAddress' => 'tel:+'.str_replace('+', '', $defaultChannel->getSenderNumber()),
-                    'senderName' => $defaultChannel->getSenderName(),
+                    'senderAddress' => 'tel:+'.str_replace('+', '', $channelToUse->getSenderNumber()),
+                    'senderName' => $channelToUse->getSenderName(),
                     'outboundSMSTextMessage' => ['message' => $entity->getMessage()],
                 ]];
 
@@ -142,8 +154,8 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
 
                 $messageId = null != $entity->getMessageId() ? $entity->getMessageId() : null;
 
-                if ($defaultChannel->getSentUrl()) {
-                    $this->postMessageSent($defaultChannel->getSentUrl(), $messageId);
+                if ($channelToUse->getSentUrl()) {
+                    $this->postMessageSent($channelToUse->getSentUrl(), $messageId);
                 }
             } else {
                 $response = new Response();
@@ -174,10 +186,10 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
         $entity = $event->getControllerResult();
 
         if ($entity instanceof DeliveryNotifications && 'DeliveredToTerminal' == $entity->getDeliveryStatus()) {
-            $defaultChannel = $this->channelRepo->getDefaultChannel();
-            $defaultChannel = $defaultChannel[0];
+            $channelToUse = $this->channelRepo->getDefaultChannel();
+            $channelToUse = $channelToUse[0];
 
-            $endpoint = $defaultChannel->getDeliveredUrl();
+            $endpoint = $channelToUse->getDeliveredUrl();
 
             $message = $this->messageRepo->findOneWithDeliveryCallbackUuid($entity->getDeliveryCallbackUuid());
 

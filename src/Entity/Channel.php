@@ -100,7 +100,7 @@ class Channel
     private $tokens;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $created;
 
@@ -109,9 +109,16 @@ class Channel
      */
     private $updated;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="channel")
+     */
+    private $messages;
+
     public function __construct()
     {
         $this->tokens = new ArrayCollection();
+        $this->created = new \DateTime('now');
+        $this->messages = new ArrayCollection();
     }
 
     public function __toString(): ?string
@@ -122,6 +129,11 @@ class Channel
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getChannelSlug(): ?string
+    {
+        return strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $this->label.'-'.$this->id)));
     }
 
     public function getIsDefault(): ?bool
@@ -366,6 +378,36 @@ class Channel
     public function setUpdated(?\DateTimeInterface $updated): self
     {
         $this->updated = $updated;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Message[]
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Message $message): self
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages[] = $message;
+            $message->setChannel($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Message $message): self
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getChannel() === $this) {
+                $message->setChannel(null);
+            }
+        }
 
         return $this;
     }

@@ -41,7 +41,7 @@ class DeliveryNotifications
     private $deliveryInfoNotification = [];
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $created;
 
@@ -49,6 +49,11 @@ class DeliveryNotifications
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $updated;
+
+    public function __construct()
+    {
+        $this->created = new \DateTime('now');
+    }
 
     public function getId(): ?int
     {

@@ -5,9 +5,13 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ * normalizationContext={"groups"={"read"}},
+ * denormalizationContext={"groups"={"write"}}
+ * )
  * @ORM\Entity(repositoryClass=MessageRepository::class)
  */
 class Message
@@ -16,47 +20,67 @@ class Message
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=25)
+     * @Groups({"read"})
      */
     private $status;
 
     /**
      * @ORM\Column(type="string", length=30)
+     * @Groups({"read", "write"})
      */
     private $sendTo;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"read", "write"})
      */
     private $message;
 
     /**
      * @ORM\Column(type="string", length=180)
+     * @Groups({"read", "write"})
      */
     private $deliveryCallbackUuid = 'N/A';
 
     /**
      * @ORM\Column(type="string", length=30, nullable=true)
+     * @Groups({"read", "write"})
      */
     private $messageId;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"read"})
      */
     private $created;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"read"})
      */
     private $updated;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Channel::class, inversedBy="messages")
+     */
+    private $channel;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"write"})
+     */
+    private $channelSlug;
 
     public function __construct()
     {
         $this->status = 'Received';
+        $this->created = new \DateTime('now');
     }
 
     public function getId(): ?int
@@ -144,6 +168,30 @@ class Message
     public function setUpdated(?\DateTimeInterface $updated): self
     {
         $this->updated = $updated;
+
+        return $this;
+    }
+
+    public function getChannel(): ?Channel
+    {
+        return $this->channel;
+    }
+
+    public function setChannel(?Channel $channel): self
+    {
+        $this->channel = $channel;
+
+        return $this;
+    }
+
+    public function getChannelSlug(): ?string
+    {
+        return $this->channelSlug;
+    }
+
+    public function setChannelSlug(?string $channelSlug): self
+    {
+        $this->channelSlug = $channelSlug;
 
         return $this;
     }
