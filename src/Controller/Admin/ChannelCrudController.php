@@ -3,6 +3,9 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Channel;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -45,5 +48,14 @@ class ChannelCrudController extends AbstractCrudController
             UrlField::new('failedUrl')->setDefaultColumns(5)->setHelp('The callback to inform the calling platform that message is not delivered')->hideOnIndex(),
             UrlField::new('stoppedUrl')->setDefaultColumns(5)->setHelp('The callback to inform the calling platform that contact asks to opt-out')->hideOnIndex(),
         ];
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->remove(Crud::PAGE_INDEX, Action::DELETE)
+            ->remove(Crud::PAGE_INDEX, Action::EDIT)
+        ;
     }
 }
