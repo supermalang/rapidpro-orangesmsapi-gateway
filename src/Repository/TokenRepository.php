@@ -7,8 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @method Token|null find($id, $lockMode = null, $lockVersion = null)
- * @method Token|null findOneBy(array $criteria, array $orderBy = null)
+ * @method null|Token find($id, $lockMode = null, $lockVersion = null)
+ * @method null|Token findOneBy(array $criteria, array $orderBy = null)
  * @method Token[]    findAll()
  * @method Token[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
@@ -47,4 +47,16 @@ class TokenRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findOneWithChannelId($value): ?Token
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.channel = :val')
+            ->setParameter('val', $value)
+            ->orderBy('t.createDate', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }

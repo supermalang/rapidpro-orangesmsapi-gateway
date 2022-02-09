@@ -20,7 +20,7 @@ class TokenCrudController extends AbstractCrudController
         return [
             AssociationField::new('channel')->setDefaultColumns(5),
             TextField::new('type')->setDefaultColumns(5),
-            TextField::new('access_token')->setDefaultColumns(5),
+            TextField::new('access_token')->setDefaultColumns(5)->hideOnIndex(),
             DateTimeField::new('createDate')->hideOnForm()->setDefaultColumns(5),
             DateTimeField::new('expireDate')->hideOnForm()->setDefaultColumns(5),
         ];
