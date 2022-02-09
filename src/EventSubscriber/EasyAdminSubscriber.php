@@ -2,7 +2,6 @@
 
 namespace App\EventSubscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
 use App\Entity\DeliveryNotifications;
 use App\Entity\Message;
 use App\Entity\Token;
@@ -11,13 +10,11 @@ use App\Repository\MessageRepository;
 use App\Repository\TokenRepository;
 use App\Service\OrangeTokenHelper;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityPersistedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\ViewEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class ApiPlatformSubscriber implements EventSubscriberInterface
+class EasyAdminSubscriber implements EventSubscriberInterface
 {
     private $client;
 
@@ -34,18 +31,16 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            KernelEvents::VIEW => [
-                // To Handle later. Need to be called only when our service receives an incoming message to forward to RapidPro
-                // ['postMessageReceived', EventPriorities::PRE_WRITE, 200],
-                ['transmitMessage', EventPriorities::PRE_WRITE, 100],
-                ['postMessageDelivered', EventPriorities::PRE_WRITE, 50],
+            BeforeEntityPersistedEvent::class => [
+                ['transmitMessage', 110],
+                ['postMessageDelivered', 60],
             ],
         ];
     }
 
-    public function postMessageReceived(ViewEvent $event)
+    public function postMessageReceived(BeforeEntityPersistedEvent $event)
     {
-        $entity = $event->getControllerResult();
+        $entity = $event->getEntityInstance();
         if ($entity instanceof Message) {
             $defaultChannel = $this->channelRepo->getDefaultChannel();
             $defaultChannel = $defaultChannel[0];
@@ -61,9 +56,9 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
     }
 
     /** Transmit the message to the SMS endpoint Platform */
-    public function transmitMessage(ViewEvent $event)
+    public function transmitMessage(BeforeEntityPersistedEvent $event)
     {
-        $entity = $event->getControllerResult();
+        $entity = $event->getEntityInstance();
 
         if ($entity instanceof Message) {
             $now_time = new \DateTime('now');
@@ -103,13 +98,7 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
 
                     $lastToken = $tokenEntity;
                 } else {
-                    $response = new Response();
-                    $response->setContent(json_encode(['message' => 'Unable to get authorization from the sending server. Please try again later.']));
-                    $response->headers->set('Content-Type', 'application/json');
-                    $response->setStatusCode(Response::HTTP_BAD_GATEWAY);
-
-                    $event->setResponse($response);
-
+                    // TODO: Fire Exception
                     return;
                 }
             }
@@ -144,12 +133,9 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
                     $this->postMessageSent($defaultChannel->getSentUrl(), $messageId);
                 }
             } else {
-                $response = new Response();
-                $response->setContent(json_encode(['message' => 'A message with this messageId already exists in the database']));
-                $response->headers->set('Content-Type', 'application/json');
-                $response->setStatusCode(Response::HTTP_TOO_EARLY);
+                // TODO: Fire Exception
 
-                $event->setResponse($response);
+                return;
             }
         }
     }
@@ -167,9 +153,9 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
     }
 
     /** Notify the Calling Platform that the message has been delivered */
-    public function postMessageDelivered(ViewEvent $event)
+    public function postMessageDelivered(BeforeEntityPersistedEvent $event)
     {
-        $entity = $event->getControllerResult();
+        $entity = $event->getEntityInstance();
 
         if ($entity instanceof DeliveryNotifications && 'DeliveredToTerminal' == $entity->getDeliveryStatus()) {
             $defaultChannel = $this->channelRepo->getDefaultChannel();
