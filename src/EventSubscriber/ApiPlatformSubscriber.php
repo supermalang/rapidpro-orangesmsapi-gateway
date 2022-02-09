@@ -94,7 +94,7 @@ class ApiPlatformSubscriber implements EventSubscriberInterface
                     $tokenEntity->setType($authToken['token_type']);
                     $tokenEntity->setAccessToken($authToken['access_token']);
                     $tokenExpireDate = $now_time->add(new \DateInterval('PT'.$authToken['expires_in'].'S')); // adds `expires_in` seconds (3600 by default)
-                    $tokenEntity->setCreateDate($now_time);
+                    $tokenEntity->setCreateDate(new \DateTime('now'));
                     $tokenEntity->setExpireDate($tokenExpireDate);
                     $tokenEntity->setChannel($defaultChannel);
 
