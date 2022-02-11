@@ -25,9 +25,9 @@ class Channel
     private $isDefault = false;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      */
-    private $authorization;
+    private $authorization; // DEPRECATED
 
     /**
      * @ORM\Column(type="string", length=50)
