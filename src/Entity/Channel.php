@@ -22,7 +22,7 @@ class Channel
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isDefault;
+    private $isDefault = false;
 
     /**
      * @ORM\Column(type="text")
